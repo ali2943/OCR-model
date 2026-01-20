@@ -1,0 +1,87 @@
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Training outputs
+output/
+!output/rec_model/.gitkeep
+!output/inference/.gitkeep
+logs/
+!logs/.gitkeep
+*.pdparams
+*.pdopt
+*.pdmodel
+*.pdiparams
+*.states
+
+# Dataset images (keep structure but not actual images)
+dataset/raw/images/
+dataset/train/images/
+dataset/val/images/
+dataset/test/images/
+*.png
+*.jpg
+*.jpeg
+*.bmp
+*.gif
+*.tiff
+*.webp
+
+# Keep label files and dictionary
+!dataset/raw/labels.txt
+!dataset/dict.txt
+!dataset/train/train_list.txt
+!dataset/val/val_list.txt
+!dataset/test/test_list.txt
+
+# PaddleOCR directory (clone it separately)
+PaddleOCR/
+
+# Pretrained models
+pretrained_models/
+!pretrained_models/.gitkeep
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# Environment
+venv/
+env/
+ENV/
+.venv
+
+# VisualDL logs
+vdl_log/
+
+# Temporary files
+*.log
+*.tmp
+*.bak
+.cache/
