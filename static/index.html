@@ -302,7 +302,7 @@
                 <h2>Upload Image</h2>
                 <p style="margin: 15px 0; color: #666;">Drag and drop an image here or click to browse</p>
                 <input type="file" id="fileInput" class="file-input" accept="image/*">
-                <button class="upload-button" onclick="document.getElementById('fileInput').click()">
+                <button class="upload-button" id="uploadButton">
                     Choose File
                 </button>
                 <div id="selectedFile" class="selected-file" style="display: none;"></div>
@@ -316,7 +316,7 @@
             </div>
 
             <div style="text-align: center;">
-                <button class="process-button" id="processButton" onclick="processImage()" disabled>
+                <button class="process-button" id="processButton" disabled>
                     Process Image
                 </button>
             </div>
@@ -372,6 +372,14 @@
                 reader.readAsDataURL(file);
             }
         });
+
+        // Upload button click handler
+        document.getElementById('uploadButton').addEventListener('click', function() {
+            document.getElementById('fileInput').click();
+        });
+
+        // Process button click handler
+        document.getElementById('processButton').addEventListener('click', processImage);
 
         // Drag and drop handlers
         const uploadSection = document.getElementById('uploadSection');

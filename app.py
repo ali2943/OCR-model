@@ -8,6 +8,7 @@ Provides REST API endpoints for text recognition using fine-tuned PaddleOCR mode
 import os
 import io
 import sys
+import uuid
 from pathlib import Path
 from typing import List, Optional
 import warnings
@@ -128,8 +129,10 @@ async def ocr_endpoint(
         contents = await file.read()
         image = Image.open(io.BytesIO(contents))
         
-        # Save temporarily for processing
-        temp_path = Path("/tmp") / file.filename
+        # Save temporarily for processing using secure UUID filename
+        file_extension = Path(file.filename).suffix if file.filename else '.jpg'
+        safe_filename = f"{uuid.uuid4()}{file_extension}"
+        temp_path = Path("/tmp") / safe_filename
         temp_path.parent.mkdir(parents=True, exist_ok=True)
         image.save(temp_path)
         
@@ -203,7 +206,10 @@ async def ocr_batch_endpoint(
             contents = await file.read()
             image = Image.open(io.BytesIO(contents))
             
-            temp_path = Path("/tmp") / file.filename
+            # Use secure UUID filename to prevent path traversal
+            file_extension = Path(file.filename).suffix if file.filename else '.jpg'
+            safe_filename = f"{uuid.uuid4()}{file_extension}"
+            temp_path = Path("/tmp") / safe_filename
             temp_path.parent.mkdir(parents=True, exist_ok=True)
             image.save(temp_path)
             temp_paths.append(temp_path)
