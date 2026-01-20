@@ -21,10 +21,9 @@ wheels/
 *.egg
 
 # Training outputs
-output/
-!output/rec_model/.gitkeep
-!output/inference/.gitkeep
-logs/
+output/**/*
+!output/**/.gitkeep
+logs/**/*
 !logs/.gitkeep
 *.pdparams
 *.pdopt
@@ -56,7 +55,7 @@ dataset/test/images/
 PaddleOCR/
 
 # Pretrained models
-pretrained_models/
+pretrained_models/**/*
 !pretrained_models/.gitkeep
 
 # IDE files
