@@ -107,6 +107,11 @@
             font-weight: 500;
         }
 
+        .upload-instruction {
+            margin: 15px 0;
+            color: #555;
+        }
+
         .process-button {
             background: #4caf50;
             color: white;
@@ -300,7 +305,7 @@
             <div class="upload-section" id="uploadSection">
                 <div class="upload-icon">📁</div>
                 <h2>Upload Image</h2>
-                <p style="margin: 15px 0; color: #666;">Drag and drop an image here or click to browse</p>
+                <p class="upload-instruction">Drag and drop an image here or click to browse</p>
                 <input type="file" id="fileInput" class="file-input" accept="image/*">
                 <button class="upload-button" id="uploadButton">
                     Choose File
