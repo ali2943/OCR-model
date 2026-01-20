@@ -1,6 +1,6 @@
 # PaddleOCR Fine-tuning Environment
 
-A complete setup for fine-tuning PaddleOCR text recognition models with custom datasets. This repository provides an organized structure, dataset preparation utilities, training scripts, and inference code for building custom OCR models.
+A complete setup for fine-tuning PaddleOCR text recognition models with custom datasets. This repository provides an organized structure, dataset preparation utilities, training scripts, inference code, and a **FastAPI web service with HTML interface** for building and deploying custom OCR models.
 
 ## 📋 Table of Contents
 
@@ -8,6 +8,7 @@ A complete setup for fine-tuning PaddleOCR text recognition models with custom d
 - [Folder Structure](#folder-structure)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
+- [Web Service](#web-service)
 - [Dataset Preparation](#dataset-preparation)
 - [Training Workflow](#training-workflow)
 - [Configuration](#configuration)
@@ -23,6 +24,8 @@ This setup enables you to:
 - Prepare datasets with automatic validation and splitting
 - Monitor training progress and evaluate model performance
 - Export trained models for production inference
+- **Deploy OCR model as a web service with REST API**
+- **Use a modern HTML interface for easy OCR processing**
 
 ## 📁 Folder Structure
 
@@ -64,8 +67,12 @@ OCR-model/
 │   └── export.sh                 # Model export script
 ├── inference/
 │   └── predict.py                # Inference script
+├── static/                       # Web interface
+│   └── index.html                # HTML interface for OCR
 ├── logs/                         # Training logs
 │   └── .gitkeep
+├── app.py                        # FastAPI web service
+├── API_DOCS.md                   # API documentation
 ├── requirements.txt              # Python dependencies
 ├── .gitignore                    # Git ignore rules
 └── README.md                     # This file
@@ -131,7 +138,103 @@ bash scripts/export.sh
 
 # 6. Run inference
 python inference/predict.py path/to/test/image.jpg
+
+# 7. Start the web service (NEW!)
+python app.py
+# Or use the quick start script:
+bash start_web_service.sh
 ```
+
+### Using the Quick Start Script
+
+For an easier setup, use the included quick start script:
+
+```bash
+bash start_web_service.sh
+```
+
+This script will:
+- Create a virtual environment (if not exists)
+- Install all dependencies
+- Check for required model files
+- Start the web service
+
+## 🌐 Web Service
+
+### Starting the Web Server
+
+After exporting your trained model, you can start the web service:
+
+```bash
+python app.py
+```
+
+This will start a FastAPI server on `http://localhost:8000` with:
+- 🖥️ **Web Interface**: User-friendly HTML interface at `http://localhost:8000`
+- 📚 **API Documentation**: Interactive docs at `http://localhost:8000/docs`
+- 🔌 **REST API**: Programmatic access to OCR functionality
+
+### Web Interface Features
+
+The HTML interface (`http://localhost:8000`) provides:
+- **Drag & Drop**: Easily upload images by dragging them into the browser
+- **Live Preview**: See your uploaded image before processing
+- **Instant Results**: Get OCR results displayed in real-time
+- **Detailed Mode**: View confidence scores and bounding boxes
+- **Responsive Design**: Works on desktop and mobile devices
+
+### API Endpoints
+
+**Health Check:**
+```bash
+curl http://localhost:8000/health
+```
+
+**Single Image OCR:**
+```bash
+curl -X POST "http://localhost:8000/api/ocr" \
+  -F "file=@image.jpg"
+```
+
+**Batch Processing:**
+```bash
+curl -X POST "http://localhost:8000/api/ocr/batch" \
+  -F "files=@image1.jpg" \
+  -F "files=@image2.jpg"
+```
+
+### Server Options
+
+```bash
+# Custom port
+python app.py --port 5000
+
+# CPU inference
+python app.py --cpu
+
+# Custom model path
+python app.py --model_dir ./output/inference/ --dict_path ./dataset/dict.txt
+
+# Development mode with auto-reload
+python app.py --reload
+```
+
+### Python Client Example
+
+An example Python client is provided to demonstrate API usage:
+
+```bash
+# Check server health and model info
+python example_api_client.py
+
+# Process a single image
+python example_api_client.py path/to/image.jpg
+
+# Process multiple images
+python example_api_client.py image1.jpg image2.jpg image3.jpg
+```
+
+For complete API documentation, see [API_DOCS.md](API_DOCS.md)
 
 ## 📊 Dataset Preparation
 
