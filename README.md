@@ -141,7 +141,23 @@ python inference/predict.py path/to/test/image.jpg
 
 # 7. Start the web service (NEW!)
 python app.py
+# Or use the quick start script:
+bash start_web_service.sh
 ```
+
+### Using the Quick Start Script
+
+For an easier setup, use the included quick start script:
+
+```bash
+bash start_web_service.sh
+```
+
+This script will:
+- Create a virtual environment (if not exists)
+- Install all dependencies
+- Check for required model files
+- Start the web service
 
 ## 🌐 Web Service
 
@@ -201,6 +217,21 @@ python app.py --model_dir ./output/inference/ --dict_path ./dataset/dict.txt
 
 # Development mode with auto-reload
 python app.py --reload
+```
+
+### Python Client Example
+
+An example Python client is provided to demonstrate API usage:
+
+```bash
+# Check server health and model info
+python example_api_client.py
+
+# Process a single image
+python example_api_client.py path/to/image.jpg
+
+# Process multiple images
+python example_api_client.py image1.jpg image2.jpg image3.jpg
 ```
 
 For complete API documentation, see [API_DOCS.md](API_DOCS.md)
