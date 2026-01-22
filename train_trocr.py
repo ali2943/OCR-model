@@ -94,25 +94,34 @@ def compute_cer(pred_ids, label_ids, processor):
     return cer
 
 
-def compute_metrics(eval_pred):
+def create_compute_metrics(processor):
     """
-    Compute metrics for evaluation
+    Create a compute_metrics function with processor closure
     
     Args:
-        eval_pred: Tuple of (predictions, labels)
+        processor: TrOCR processor
     
     Returns:
-        Dictionary of metrics
+        compute_metrics function
     """
-    logits, labels = eval_pred
-    predicted_ids = np.argmax(logits, axis=-1)
+    def compute_metrics(eval_pred):
+        """
+        Compute metrics for evaluation
+        
+        Args:
+            eval_pred: Tuple of (predictions, labels)
+        
+        Returns:
+            Dictionary of metrics
+        """
+        logits, labels = eval_pred
+        predicted_ids = np.argmax(logits, axis=-1)
+        
+        cer = compute_cer(predicted_ids, labels, processor)
+        
+        return {"cer": cer}
     
-    # Get processor from global scope
-    processor = compute_metrics.processor
-    
-    cer = compute_cer(predicted_ids, labels, processor)
-    
-    return {"cer": cer}
+    return compute_metrics
 
 
 def preprocess_function(examples, processor, max_length=10):
@@ -272,12 +281,12 @@ def main():
         report_to=["tensorboard"],
     )
     
-    # Set processor for metrics computation
-    compute_metrics.processor = processor
-    
-    # Initialize trainer
     print(f"   ✅ Configuration ready")
     
+    # Create compute_metrics function with processor
+    compute_metrics_fn = create_compute_metrics(processor)
+    
+    # Initialize trainer
     print(f"\n🏋️  Initializing trainer...")
     
     trainer = Seq2SeqTrainer(
@@ -286,7 +295,7 @@ def main():
         train_dataset=processed_datasets.get('train'),
         eval_dataset=processed_datasets.get('validation'),
         data_collator=default_data_collator,
-        compute_metrics=compute_metrics,
+        compute_metrics=compute_metrics_fn,
     )
     
     print(f"   ✅ Trainer initialized")

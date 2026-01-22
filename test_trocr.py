@@ -36,10 +36,9 @@ def load_test_dataset(dataset_dir: Path) -> Tuple[List[str], List[str]]:
     if not test_dir.exists():
         raise FileNotFoundError(f"Test directory not found: {test_dir}")
     
-    # Find test list file
+    # Find test list file (handle potential naming variations)
     list_files = [
         test_dir / 'test_list.txt',
-        test_dir / 'test_list. txt',
     ]
     
     list_file = None

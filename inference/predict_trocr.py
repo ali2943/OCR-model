@@ -22,7 +22,14 @@ warnings.filterwarnings('ignore')
 
 
 class CustomTrOCR:
-    """Custom TrOCR wrapper for inference with fine-tuned model"""
+    """
+    Custom TrOCR wrapper for inference with fine-tuned model
+    
+    Note: The confidence scores returned in detailed mode are placeholders (0.95)
+    for backward compatibility with PaddleOCR API. TrOCR's generate() method
+    doesn't provide direct confidence scores. For actual confidence, you would
+    need to use model.forward() and compute token probabilities.
+    """
     
     def __init__(
         self,
@@ -113,12 +120,12 @@ class CustomTrOCR:
             generated_text = self._processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
             
             if detail:
-                # For TrOCR, we don't have direct confidence scores
-                # We can use the average probability of generated tokens as a proxy
-                # For simplicity, we'll return a placeholder confidence
+                # Note: TrOCR doesn't provide direct confidence scores in generate() mode.
+                # For actual confidence, you would need to use model.forward() and compute
+                # token probabilities. Using 0.95 as a placeholder for API compatibility.
                 return {
                     'text': generated_text,
-                    'confidence': 0.95  # Placeholder confidence
+                    'confidence': 0.95  # Placeholder - not actual model confidence
                 }
             else:
                 return generated_text
@@ -197,6 +204,8 @@ class CustomTrOCR:
                         result_idx += 1
                         
                         if detail:
+                            # Note: Confidence is a placeholder (0.95) for API compatibility
+                            # TrOCR's generate() doesn't provide direct confidence scores
                             results.append({'text': text, 'confidence': 0.95})
                         else:
                             results.append(text)

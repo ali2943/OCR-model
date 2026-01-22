@@ -32,10 +32,9 @@ def load_dataset_split(split_dir: Path, split_name: str) -> Tuple[List[str], Lis
     """
     print(f"\n📂 Processing {split_name} split...")
     
-    # Find the list file (handle naming variations)
+    # Find the list file
     list_files = [
         split_dir / f"{split_name}_list.txt",
-        split_dir / f"{split_name}_list. txt",  # Handle space in filename
     ]
     
     list_file = None

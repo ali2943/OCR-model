@@ -63,7 +63,7 @@ def get_ocr_model() -> CustomTrOCR:
         except FileNotFoundError as e:
             raise HTTPException(
                 status_code=500,
-                detail=f"Model not found: {str(e)}. Please ensure the model is trained to {model_dir}"
+                detail=f"Model not found: {str(e)}. Please ensure the model is trained and saved to {model_dir}"
             )
     return ocr_model
 
