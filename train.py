@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-TrOCR Training Script
+OCR Training Script
 
 Fine-tunes Microsoft's pre-trained TrOCR model on custom dataset.
 
 Usage:
-    python train_trocr.py [--cpu]
+    python train.py [--cpu]
 """
 
 import os
@@ -32,7 +32,7 @@ from tqdm import tqdm
 # Configuration
 CONFIG = {
     'model_name': 'microsoft/trocr-small-printed',
-    'output_dir': './trocr_model/checkpoints',
+    'output_dir': './checkpoints',
     'num_train_epochs': 20,
     'per_device_train_batch_size': 16,
     'per_device_eval_batch_size': 16,
@@ -41,7 +41,7 @@ CONFIG = {
     'save_steps': 500,
     'eval_steps': 500,
     'logging_steps': 100,
-    'logging_dir': './trocr_model/logs',
+    'logging_dir': './logs',
     'save_total_limit': 3,
     'load_best_model_at_end': True,
     'metric_for_best_model': 'cer',
@@ -175,11 +175,11 @@ def preprocess_function(examples, processor, max_length=10):
 
 def main():
     """Main training function"""
-    parser = argparse.ArgumentParser(description='Train TrOCR model')
+    parser = argparse.ArgumentParser(description='Train OCR model')
     parser.add_argument('--cpu', action='store_true',
                         help='Force CPU training (default: use GPU if available)')
     parser.add_argument('--dataset_dir', type=str,
-                        default='./trocr_model/dataset_processed',
+                        default='./dataset_processed',
                         help='Directory containing processed dataset')
     parser.add_argument('--epochs', type=int, default=20,
                         help='Number of training epochs')
@@ -191,7 +191,7 @@ def main():
     args = parser.parse_args()
     
     print("="*70)
-    print("🚀 TrOCR TRAINING")
+    print("🚀 OCR TRAINING")
     print("="*70)
     
     # Update config with command line args
@@ -335,7 +335,7 @@ def main():
         sys.exit(1)
     
     # Save final model
-    final_model_dir = Path('./trocr_model/final')
+    final_model_dir = Path('./model')
     print(f"\n💾 Saving final model to {final_model_dir}...")
     final_model_dir.mkdir(parents=True, exist_ok=True)
     
@@ -361,9 +361,9 @@ def main():
     print("="*70)
     print(f"\nModel saved to: {final_model_dir}")
     print(f"\nNext steps:")
-    print(f"   1. Test the model: python test_trocr.py")
-    print(f"   2. Run inference: python inference/predict_trocr.py <image_path>")
-    print(f"   3. Start API server: python ocr_fastapi_app.py --model_dir {final_model_dir}")
+    print(f"   1. Test the model: python test.py")
+    print(f"   2. Run inference: python inference/predict.py <image_path>")
+    print(f"   3. Start API server: python app.py --model_dir {final_model_dir}")
     print("="*70)
 
 

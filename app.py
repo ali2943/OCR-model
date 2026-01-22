@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-FastAPI Application for OCR Model
-Provides REST API endpoints for text recognition using fine-tuned PaddleOCR model
+FastAPI Application for TrOCR Model
+Provides REST API endpoints for text recognition using fine-tuned TrOCR model
 """
 
 import os
@@ -23,17 +23,16 @@ import uvicorn
 # Add inference module to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from inference.predict import CustomPaddleOCR
+from inference.predict import CustomTrOCR
 
 # Suppress warnings
 warnings.filterwarnings('ignore')
-os.environ['FLAGS_allocator_strategy'] = 'auto_growth'
 
 # Initialize FastAPI app
 app = FastAPI(
     title="OCR API",
-    description="REST API for text recognition using fine-tuned PaddleOCR model",
-    version="1.0.0"
+    description="REST API for text recognition using fine-tuned OCR model",
+    version="2.0.0"
 )
 
 # Add CORS middleware
@@ -46,27 +45,25 @@ app.add_middleware(
 )
 
 # Global OCR model instance
-ocr_model: Optional[CustomPaddleOCR] = None
+ocr_model: Optional[CustomTrOCR] = None
 
 
-def get_ocr_model() -> CustomPaddleOCR:
+def get_ocr_model() -> CustomTrOCR:
     """Get or initialize the OCR model (singleton pattern)"""
     global ocr_model
     if ocr_model is None:
-        model_dir = os.getenv('MODEL_DIR', './output/inference/')
-        dict_path = os.getenv('DICT_PATH', './dataset/dict.txt')
+        model_dir = os.getenv('MODEL_DIR', './model')
         use_gpu = os.getenv('USE_GPU', 'true').lower() == 'true'
         
         try:
-            ocr_model = CustomPaddleOCR(
+            ocr_model = CustomTrOCR(
                 model_dir=model_dir,
-                dict_path=dict_path,
                 use_gpu=use_gpu
             )
         except FileNotFoundError as e:
             raise HTTPException(
                 status_code=500,
-                detail=f"Model not found: {str(e)}. Please ensure the model is exported to {model_dir}"
+                detail=f"Model not found: {str(e)}. Please ensure the model is trained and saved to {model_dir}"
             )
     return ocr_model
 
@@ -98,8 +95,62 @@ async def health_check():
     """Health check endpoint"""
     return {
         "status": "healthy",
-        "model_loaded": ocr_model is not None
+        "model_loaded": ocr_model is not None,
+        "model_type": "TrOCR"
     }
+
+
+@app.post("/api/predict")
+async def predict_endpoint(
+    file: UploadFile = File(...),
+):
+    """
+    Perform OCR on uploaded image (simple format)
+    
+    Args:
+        file: Image file to process (jpg, png, etc.)
+    
+    Returns:
+        JSON response with recognized text and confidence
+    """
+    # Validate file type
+    if not file.content_type.startswith('image/'):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid file type: {file.content_type}. Please upload an image file."
+        )
+    
+    try:
+        # Read image file
+        contents = await file.read()
+        image = Image.open(io.BytesIO(contents))
+        
+        # Save temporarily for processing using secure UUID filename
+        file_extension = Path(file.filename).suffix if file.filename else '.jpg'
+        safe_filename = f"{uuid.uuid4()}{file_extension}"
+        temp_path = Path("/tmp") / safe_filename
+        temp_path.parent.mkdir(parents=True, exist_ok=True)
+        image.save(temp_path)
+        
+        # Get OCR model and perform prediction
+        ocr = get_ocr_model()
+        result = ocr.predict(str(temp_path), detail=True)
+        
+        # Clean up temporary file
+        temp_path.unlink(missing_ok=True)
+        
+        # Return results in standard format
+        return {
+            "success": True,
+            "text": result['text'],
+            "confidence": result['confidence']
+        }
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"OCR processing failed: {str(e)}"
+        )
 
 
 @app.post("/api/ocr")
@@ -112,7 +163,7 @@ async def ocr_endpoint(
     
     Args:
         file: Image file to process (jpg, png, etc.)
-        detail: If true, returns detailed results with bounding boxes and confidence
+        detail: If true, returns detailed results with confidence
     
     Returns:
         JSON response with recognized text
@@ -148,7 +199,8 @@ async def ocr_endpoint(
             return {
                 "success": True,
                 "filename": file.filename,
-                "results": result
+                "text": result['text'],
+                "confidence": result['confidence']
             }
         else:
             return {
@@ -174,7 +226,7 @@ async def ocr_batch_endpoint(
     
     Args:
         files: List of image files to process
-        detail: If true, returns detailed results with bounding boxes and confidence
+        detail: If true, returns detailed results with confidence
     
     Returns:
         JSON response with recognized text for each image
@@ -223,7 +275,8 @@ async def ocr_batch_endpoint(
             if detail:
                 results.append({
                     "filename": file.filename,
-                    "results": prediction
+                    "text": prediction['text'],
+                    "confidence": prediction['confidence']
                 })
             else:
                 results.append({
@@ -255,10 +308,10 @@ async def model_info():
     ocr = get_ocr_model()
     
     return {
+        "model_type": "TrOCR",
         "model_dir": str(ocr.model_dir),
-        "dict_path": str(ocr.dict_path),
         "use_gpu": ocr.use_gpu,
-        "lang": ocr.lang
+        "device": str(ocr.device)
     }
 
 
@@ -272,15 +325,13 @@ def main():
     """Run the FastAPI application"""
     import argparse
     
-    parser = argparse.ArgumentParser(description='OCR FastAPI Server')
+    parser = argparse.ArgumentParser(description='OCR FastAPI Server (TrOCR)')
     parser.add_argument('--host', type=str, default='0.0.0.0',
                         help='Host to bind to (default: 0.0.0.0)')
     parser.add_argument('--port', type=int, default=8000,
                         help='Port to bind to (default: 8000)')
-    parser.add_argument('--model_dir', type=str, default='./output/inference/',
-                        help='Directory containing exported inference model')
-    parser.add_argument('--dict_path', type=str, default='./dataset/dict.txt',
-                        help='Path to custom character dictionary')
+    parser.add_argument('--model_dir', type=str, default='./model',
+                        help='Directory containing trained model')
     parser.add_argument('--cpu', action='store_true',
                         help='Force CPU inference (default: use GPU if available)')
     parser.add_argument('--reload', action='store_true',
@@ -290,7 +341,6 @@ def main():
     
     # Set environment variables
     os.environ['MODEL_DIR'] = args.model_dir
-    os.environ['DICT_PATH'] = args.dict_path
     os.environ['USE_GPU'] = str(not args.cpu).lower()
     
     # Run server

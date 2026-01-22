@@ -58,15 +58,15 @@ PaddleOCR/
 pretrained_models/**/*
 !pretrained_models/.gitkeep
 
-# TrOCR model artifacts
-trocr_model/checkpoints/**/*
-!trocr_model/checkpoints/.gitkeep
-trocr_model/logs/**/*
-!trocr_model/logs/.gitkeep
-trocr_model/dataset_processed/**/*
-!trocr_model/dataset_processed/.gitkeep
-trocr_model/final/**/*
-!trocr_model/final/.gitkeep
+# Model artifacts
+checkpoints/**/*
+!checkpoints/.gitkeep
+logs/**/*
+!logs/.gitkeep
+dataset_processed/**/*
+!dataset_processed/.gitkeep
+model/**/*
+!model/.gitkeep
 
 # IDE files
 .vscode/

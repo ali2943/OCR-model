@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-TrOCR Dataset Preparation Script
+OCR Dataset Preparation Script
 
-Converts existing dataset from PaddleOCR format to HuggingFace Dataset format
-compatible with TrOCR.
+Converts existing dataset to HuggingFace Dataset format compatible with TrOCR.
 
 Usage:
-    python prepare_trocr_dataset.py
+    python prepare_dataset.py
 """
 
 import os
@@ -156,13 +155,13 @@ def create_huggingface_dataset(image_paths: List[str], labels: List[str]) -> Dat
 def main():
     """Main function"""
     print("="*70)
-    print("🚀 TrOCR DATASET PREPARATION")
+    print("🚀 OCR DATASET PREPARATION")
     print("="*70)
     
     # Paths
     base_dir = Path(__file__).parent
     dataset_dir = base_dir / 'dataset'
-    output_dir = base_dir / 'trocr_model' / 'dataset_processed'
+    output_dir = base_dir / 'dataset_processed'
     
     # Create output directory
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -258,8 +257,8 @@ def main():
     print("✅ Dataset preparation completed successfully!")
     print("="*70)
     print(f"\nNext steps:")
-    print(f"   1. Train the model: python train_trocr.py")
-    print(f"   2. Test the model: python test_trocr.py")
+    print(f"   1. Train the model: python train.py")
+    print(f"   2. Test the model: python test.py")
     print("="*70)
 
 

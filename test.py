@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-TrOCR Testing Script
+OCR Testing Script
 
-Tests the trained TrOCR model on the test dataset.
+Tests the trained OCR model on the test dataset.
 
 Usage:
-    python test_trocr.py [--model_dir ./trocr_model/final] [--limit 50]
+    python test.py [--model_dir ./model] [--limit 50]
 """
 
 import os
@@ -157,8 +157,8 @@ def compute_accuracy(predictions: List[str], labels: List[str]) -> Dict[str, flo
 
 def main():
     """Main testing function"""
-    parser = argparse.ArgumentParser(description='Test TrOCR model')
-    parser.add_argument('--model_dir', type=str, default='./trocr_model/final',
+    parser = argparse.ArgumentParser(description='Test OCR model')
+    parser.add_argument('--model_dir', type=str, default='./model',
                         help='Directory containing trained model')
     parser.add_argument('--dataset_dir', type=str, default='./dataset',
                         help='Directory containing dataset')
@@ -174,7 +174,7 @@ def main():
     args = parser.parse_args()
     
     print("="*70)
-    print("🧪 TrOCR MODEL TESTING")
+    print("🧪 OCR MODEL TESTING")
     print("="*70)
     
     # Setup device
