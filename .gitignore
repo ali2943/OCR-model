@@ -58,6 +58,16 @@ PaddleOCR/
 pretrained_models/**/*
 !pretrained_models/.gitkeep
 
+# Model artifacts
+checkpoints/**/*
+!checkpoints/.gitkeep
+logs/**/*
+!logs/.gitkeep
+dataset_processed/**/*
+!dataset_processed/.gitkeep
+model/**/*
+!model/.gitkeep
+
 # IDE files
 .vscode/
 .idea/

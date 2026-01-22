@@ -1,28 +1,14 @@
-# PaddleOCR Fine-tuning Environment
+# OCR Fine-tuning with TrOCR
 
-A complete setup for fine-tuning PaddleOCR text recognition models with custom datasets. This repository provides an organized structure, dataset preparation utilities, training scripts, inference code, and a **FastAPI web service with HTML interface** for building and deploying custom OCR models.
-
-## 📋 Table of Contents
-
-- [Overview](#overview)
-- [Folder Structure](#folder-structure)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Web Service](#web-service)
-- [Dataset Preparation](#dataset-preparation)
-- [Training Workflow](#training-workflow)
-- [Configuration](#configuration)
-- [Inference](#inference)
-- [Monitoring & Troubleshooting](#monitoring--troubleshooting)
-- [Resources](#resources)
+A complete setup for fine-tuning Microsoft's TrOCR (Transformer-based OCR) model on custom datasets. This repository provides dataset preparation utilities, training scripts, inference code, and a **FastAPI web service** for building and deploying custom OCR models.
 
 ## 🎯 Overview
 
 This setup enables you to:
-- Fine-tune PaddleOCR recognition models on custom datasets
-- Use the powerful SVTR_LCNet architecture with PP-OCRv3 pretrained weights
-- Prepare datasets with automatic validation and splitting
-- Monitor training progress and evaluate model performance
+- Fine-tune TrOCR models on custom datasets
+- Use the powerful `microsoft/trocr-small-printed` architecture
+- Prepare datasets with automatic validation
+- Monitor training progress with TensorBoard
 - Export trained models for production inference
 - **Deploy OCR model as a web service with REST API**
 - **Use a modern HTML interface for easy OCR processing**
@@ -32,559 +18,187 @@ This setup enables you to:
 ```
 OCR-model/
 ├── dataset/                      # Dataset directory
-│   ├── raw/                      # Raw dataset
-│   │   ├── images/               # Raw images
-│   │   ├── labels.txt            # Image-text pairs (TAB-separated)
-│   │   └── .gitkeep
 │   ├── train/                    # Training set
 │   │   ├── images/               # Training images
-│   │   ├── train_list.txt        # Training labels (PaddleOCR format)
-│   │   └── .gitkeep
+│   │   └── train_list.txt        # Training labels (image_path\tlabel)
 │   ├── val/                      # Validation set
 │   │   ├── images/               # Validation images
-│   │   ├── val_list.txt          # Validation labels
-│   │   └── .gitkeep
+│   │   └── val_list.txt          # Validation labels
 │   ├── test/                     # Test set
 │   │   ├── images/               # Test images
-│   │   ├── test_list.txt         # Test labels
-│   │   └── .gitkeep
-│   └── dict.txt                  # Character dictionary (auto-generated)
-├── configs/
-│   └── rec_custom.yml            # Training configuration
-├── pretrained_models/            # Pretrained model weights
-│   ├── en_PP-OCRv3_rec_train/    # PP-OCRv3 English model
-│   └── .gitkeep
-├── output/                       # Training outputs
-│   ├── rec_model/                # Model checkpoints
-│   │   └── .gitkeep
-│   └── inference/                # Exported inference models
-│       └── .gitkeep
-├── scripts/                      # Helper scripts
-│   ├── prepare_dataset.py        # Dataset preparation
-│   ├── download_pretrained.sh    # Download pretrained models
-│   ├── train.sh                  # Training script
-│   ├── evaluate.sh               # Evaluation script
-│   └── export.sh                 # Model export script
+│   │   └── test_list.txt         # Test labels
+│   └── dict.txt                  # Character dictionary (optional)
+├── checkpoints/                  # Training checkpoints (auto-created)
+├── logs/                         # TensorBoard logs (auto-created)
+├── dataset_processed/            # Processed HuggingFace datasets (auto-created)
+├── model/                        # Final trained model (auto-created)
 ├── inference/
 │   └── predict.py                # Inference script
-├── static/                       # Web interface
-│   └── index.html                # HTML interface for OCR
-├── logs/                         # Training logs
-│   └── .gitkeep
+├── static/                       # Web interface files
+├── prepare_dataset.py            # Dataset preparation script
+├── train.py                      # Training script
+├── test.py                       # Testing script
 ├── app.py                        # FastAPI web service
-├── API_DOCS.md                   # API documentation
-├── requirements.txt              # Python dependencies
-├── .gitignore                    # Git ignore rules
-└── README.md                     # This file
+└── requirements.txt              # Python dependencies
 ```
 
-## 🚀 Installation
-
-### 1. System Requirements
-
-- Python 3.8+
-- CUDA 11.2+ (for GPU training)
-- 8GB+ RAM (16GB+ recommended)
-- 10GB+ free disk space
-
-### 2. Clone Repository
+## 🚀 Quick Start
 
 ```bash
-git clone https://github.com/ali2943/OCR-model.git
-cd OCR-model
-```
-
-### 3. Install Dependencies
-
-For GPU (recommended):
-```bash
+# 1. Install dependencies
 pip install -r requirements.txt
-```
 
-For CPU only:
-```bash
-# Edit requirements.txt and replace 'paddlepaddle-gpu' with 'paddlepaddle'
-pip install -r requirements.txt
-```
+# 2. Prepare dataset
+python prepare_dataset.py
 
-### 4. Clone PaddleOCR
+# 3. Train model
+python train.py
 
-```bash
-git clone https://github.com/PaddlePaddle/PaddleOCR.git
-cd PaddleOCR
-pip install -e .
-cd ..
-```
+# 4. Test model
+python test.py
 
-## ⚡ Quick Start
-
-### Complete Workflow
-
-```bash
-# 1. Prepare your dataset (see Dataset Preparation section)
-python scripts/prepare_dataset.py
-
-# 2. Download pretrained model
-bash scripts/download_pretrained.sh
-
-# 3. Train the model
-bash scripts/train.sh
-
-# 4. Evaluate the model
-bash scripts/evaluate.sh
-
-# 5. Export for inference
-bash scripts/export.sh
-
-# 6. Run inference
-python inference/predict.py path/to/test/image.jpg
-
-# 7. Start the web service (NEW!)
-python app.py
-# Or use the quick start script:
-bash start_web_service.sh
-```
-
-### Using the Quick Start Script
-
-For an easier setup, use the included quick start script:
-
-```bash
-bash start_web_service.sh
-```
-
-This script will:
-- Create a virtual environment (if not exists)
-- Install all dependencies
-- Check for required model files
-- Start the web service
-
-## 🌐 Web Service
-
-### Starting the Web Server
-
-After exporting your trained model, you can start the web service:
-
-```bash
+# 5. Start web service
 python app.py
 ```
 
-This will start a FastAPI server on `http://localhost:8000` with:
-- 🖥️ **Web Interface**: User-friendly HTML interface at `http://localhost:8000`
-- 📚 **API Documentation**: Interactive docs at `http://localhost:8000/docs`
-- 🔌 **REST API**: Programmatic access to OCR functionality
-
-### Web Interface Features
-
-The HTML interface (`http://localhost:8000`) provides:
-- **Drag & Drop**: Easily upload images by dragging them into the browser
-- **Live Preview**: See your uploaded image before processing
-- **Instant Results**: Get OCR results displayed in real-time
-- **Detailed Mode**: View confidence scores and bounding boxes
-- **Responsive Design**: Works on desktop and mobile devices
-
-### API Endpoints
-
-**Health Check:**
-```bash
-curl http://localhost:8000/health
-```
-
-**Single Image OCR:**
-```bash
-curl -X POST "http://localhost:8000/api/ocr" \
-  -F "file=@image.jpg"
-```
-
-**Batch Processing:**
-```bash
-curl -X POST "http://localhost:8000/api/ocr/batch" \
-  -F "files=@image1.jpg" \
-  -F "files=@image2.jpg"
-```
-
-### Server Options
-
-```bash
-# Custom port
-python app.py --port 5000
-
-# CPU inference
-python app.py --cpu
-
-# Custom model path
-python app.py --model_dir ./output/inference/ --dict_path ./dataset/dict.txt
-
-# Development mode with auto-reload
-python app.py --reload
-```
-
-### Python Client Example
-
-An example Python client is provided to demonstrate API usage:
-
-```bash
-# Check server health and model info
-python example_api_client.py
-
-# Process a single image
-python example_api_client.py path/to/image.jpg
-
-# Process multiple images
-python example_api_client.py image1.jpg image2.jpg image3.jpg
-```
-
-For complete API documentation, see [API_DOCS.md](API_DOCS.md)
+Visit http://localhost:8000 for the web interface!
 
 ## 📊 Dataset Preparation
 
-### Input Format
-
-Your raw dataset should be organized as:
-
+Your dataset should have this structure:
 ```
-dataset/raw/
-├── images/
-│   ├── img_001.png
-│   ├── img_002.png
-│   └── ...
-└── labels.txt
+dataset/train/train_list.txt:
+images/img001.png12345
+images/img002.pngABCDE
 ```
 
-**labels.txt format** (TAB-separated):
-```
-img_001.png	Ground truth text
-img_002.png	Another text sample
-img_003.png	More examples here
+Each line: `relative_image_path\tlabel`
+
+Run preparation:
+```bash
+python prepare_dataset.py
 ```
 
-⚠️ **Important**: Use TAB (`\t`) character as separator, not spaces!
-
-### Run Dataset Preparation
+## 🏋️ Training
 
 ```bash
-python scripts/prepare_dataset.py
+# GPU training (recommended)
+python train.py
+
+# CPU training
+python train.py --cpu
+
+# Custom settings
+python train.py --epochs 30 --batch_size 32
 ```
 
-This script will:
-- ✅ Validate all images (check for corruption)
-- ✅ Split data into train/val/test (80%/10%/10%)
-- ✅ Convert to PaddleOCR format
-- ✅ Generate character dictionary
-- ✅ Provide detailed statistics
-
-**Optional arguments:**
+Monitor with TensorBoard:
 ```bash
-python scripts/prepare_dataset.py \
-    --raw_dir ./dataset/raw \
-    --output_dir ./dataset \
-    --train_ratio 0.8 \
-    --val_ratio 0.1 \
-    --seed 42
+tensorboard --logdir logs
 ```
 
-### Output Format
+**Expected time**: 30-90 min on GPU, 6-8 hours on CPU (10k images, 20 epochs)
 
-After preparation, you'll have:
-
-**train_list.txt / val_list.txt / test_list.txt:**
-```
-images/img_001.png	Ground truth text
-images/img_002.png	Another text sample
-```
-
-**dict.txt** (one character per line):
-```
-a
-b
-c
-...
-```
-
-## 🎓 Training Workflow
-
-### 1. Download Pretrained Model
+## 🧪 Testing
 
 ```bash
-bash scripts/download_pretrained.sh
+# Test on 50 images
+python test.py
+
+# Test all images
+python test.py --limit 0
+
+# Verbose output
+python test.py --verbose
 ```
 
-Downloads PP-OCRv3 English recognition model (~50MB).
-
-### 2. Start Training
-
-```bash
-bash scripts/train.sh
-```
-
-The script will:
-- Check for PaddleOCR installation
-- Validate configuration and data paths
-- Start training with progress monitoring
-- Save checkpoints every 10 epochs
-- Evaluate during training
-
-**Training parameters** (in `configs/rec_custom.yml`):
-- Epochs: 100
-- Batch size: 128
-- Learning rate: 0.001 (Cosine scheduler)
-- Image shape: [3, 48, 320]
-- Architecture: SVTR_LCNet
-
-### 3. Monitor Training
-
-Watch the terminal output for:
-- Loss values (should decrease)
-- Accuracy metrics
-- Learning rate schedule
-
-Checkpoints are saved to `output/rec_model/`:
-- `best_accuracy.pdparams` - Best performing model
-- `latest.pdparams` - Most recent checkpoint
-- `iter_epoch_*.pdparams` - Periodic checkpoints
-
-### 4. Evaluate Model
-
-```bash
-bash scripts/evaluate.sh
-```
-
-Evaluates on validation set and reports:
-- Character-level accuracy
-- Word-level accuracy
-- Per-sample predictions
-
-### 5. Export for Inference
-
-```bash
-bash scripts/export.sh
-```
-
-Exports the model to `output/inference/`:
-- `inference.pdmodel` - Model architecture
-- `inference.pdiparams` - Model weights
-
-## ⚙️ Configuration
-
-### Main Configuration File: `configs/rec_custom.yml`
-
-**Key settings you can customize:**
-
-```yaml
-Global:
-  epoch_num: 100                    # Training epochs
-  save_epoch_step: 10               # Checkpoint frequency
-  eval_batch_step: 500              # Evaluation frequency
-  character_dict_path: ./dataset/dict.txt
-  max_text_length: 25               # Maximum text length
-
-Optimizer:
-  lr:
-    learning_rate: 0.001            # Initial learning rate
-    warmup_epoch: 5                 # Warmup epochs
-
-Train:
-  loader:
-    batch_size_per_card: 128        # Batch size
-    num_workers: 8                  # Data loading workers
-
-Eval:
-  loader:
-    batch_size_per_card: 128
-    num_workers: 4
-```
-
-### Image Shape
-
-The default image shape is `[3, 48, 320]` (channels, height, width). Adjust based on your data:
-- Taller images → increase height (e.g., 64)
-- Longer text → increase width (e.g., 384, 512)
+**Target accuracy**: >85% exact match, CER < 0.06
 
 ## 🔮 Inference
 
-### Single Image Prediction
+### Command Line
 
 ```bash
-python inference/predict.py path/to/image.jpg
-```
+# Single image
+python inference/predict.py image.jpg
 
-### Detailed Output (with confidence scores)
+# Batch inference
+python inference/predict.py --batch img1.jpg img2.jpg
 
-```bash
-python inference/predict.py path/to/image.jpg --detail
-```
-
-### Batch Prediction
-
-```bash
-python inference/predict.py --batch img1.jpg img2.jpg img3.jpg
-```
-
-### CPU Inference
-
-```bash
-python inference/predict.py path/to/image.jpg --cpu
+# Detailed output
+python inference/predict.py image.jpg --detail
 ```
 
 ### Python API
 
 ```python
-from inference.predict import CustomPaddleOCR
+from inference.predict import CustomTrOCR
 
-# Initialize
-ocr = CustomPaddleOCR(
-    model_dir='./output/inference/',
-    dict_path='./dataset/dict.txt',
-    use_gpu=True
-)
-
-# Single prediction
+ocr = CustomTrOCR(model_dir='./model', use_gpu=True)
 text = ocr.predict('image.jpg')
-print(f"Recognized: {text}")
-
-# Detailed prediction
-results = ocr.predict('image.jpg', detail=True)
-for item in results:
-    print(f"Text: {item['text']}, Confidence: {item['confidence']}")
-
-# Batch prediction
-texts = ocr.predict_batch(['img1.jpg', 'img2.jpg'])
+print(text)  # '12345'
 ```
 
-## 🔍 Monitoring & Troubleshooting
+## 🌐 Web Service
 
-### Common Issues
+### Start Server
 
-**1. Out of Memory (OOM)**
-- Reduce `batch_size_per_card` in config
-- Reduce `num_workers`
-- Use smaller images
-
-**2. PaddleOCR not found**
 ```bash
-cd PaddleOCR
-pip install -e .
+python app.py
+
+# Custom port
+python app.py --port 8080
+
+# CPU mode
+python app.py --cpu
 ```
 
-**3. Dataset preparation fails**
-- Check `labels.txt` format (TAB-separated)
-- Verify image file paths
-- Ensure images are valid (not corrupted)
+### API Endpoints
 
-**4. Training loss not decreasing**
-- Check learning rate (try 0.0001 or 0.01)
-- Verify data quality
-- Increase training epochs
-- Try different batch sizes
+**POST /api/predict** - Simple OCR
+```bash
+curl -X POST "http://localhost:8000/api/predict" -F "file=@image.jpg"
+```
 
-**5. Low accuracy**
-- Increase training epochs
-- Add more training data
-- Adjust image preprocessing
-- Fine-tune hyperparameters
+Response:
+```json
+{"success": true, "text": "12345", "confidence": 0.95}
+```
 
-### Training Tips
+**POST /api/ocr** - Extended OCR with detail mode
 
-1. **Start with pretrained model**: Always use pretrained weights for better results
-2. **Monitor validation accuracy**: Stop if validation accuracy stops improving
-3. **Data quality matters**: Clean, accurate labels are crucial
-4. **Experiment with batch size**: Larger batches → more stable training
-5. **Use GPU**: Training on CPU is extremely slow
+**POST /api/ocr/batch** - Batch OCR (up to 10 images)
 
-### Log Files
+### Access Points
+- Web Interface: http://localhost:8000
+- API Docs: http://localhost:8000/docs
+- Health Check: http://localhost:8000/health
 
-- Training logs: Check terminal output or redirect to file
-- Model checkpoints: `output/rec_model/`
-- Predictions: `output/rec_model/predicts.txt`
+## 🐛 Troubleshooting
+
+**Model not found**: Run `python train.py` first
+
+**CUDA out of memory**: Use `python train.py --batch_size 8` or `--cpu`
+
+**Low accuracy**: Train longer (`--epochs 30`) or check dataset quality
+
+**Slow inference**: Ensure GPU is available: `python -c "import torch; print(torch.cuda.is_available())"`
+
+## 🔧 Configuration
+
+Edit `train.py` to customize:
+- Model: `microsoft/trocr-small-printed` (default), `trocr-small-handwritten`, etc.
+- Epochs: 20 (default)
+- Batch size: 16 (default)
+- Learning rate: 5e-5 (default)
+- Max text length: 10 characters (default)
 
 ## 📚 Resources
 
-### PaddleOCR Documentation
-
-- [Official Documentation](https://github.com/PaddlePaddle/PaddleOCR)
-- [Model Zoo](https://github.com/PaddlePaddle/PaddleOCR/blob/main/doc/doc_en/models_list_en.md)
-- [Training Guide](https://github.com/PaddlePaddle/PaddleOCR/blob/main/doc/doc_en/recognition_en.md)
-- [Configuration Docs](https://github.com/PaddlePaddle/PaddleOCR/blob/main/doc/doc_en/config_en.md)
-
-### Tutorials
-
-- [Text Recognition Tutorial](https://github.com/PaddlePaddle/PaddleOCR/blob/main/doc/doc_en/recognition_en.md)
-- [Custom Dataset Guide](https://github.com/PaddlePaddle/PaddleOCR/blob/main/doc/doc_en/dataset/recognition_dataset_en.md)
-
-### Support
-
-- [PaddleOCR Issues](https://github.com/PaddlePaddle/PaddleOCR/issues)
-- [PaddlePaddle Forum](https://github.com/PaddlePaddle/Paddle/discussions)
-
-## 📝 Dataset Format Examples
-
-### Example 1: Simple Text Recognition
-
-**labels.txt:**
-```
-receipt_001.jpg	$45.99
-receipt_002.jpg	Total: $123.45
-invoice_003.jpg	Invoice #12345
-```
-
-### Example 2: License Plates
-
-**labels.txt:**
-```
-plate_001.jpg	ABC-1234
-plate_002.jpg	XYZ-5678
-plate_003.jpg	DEF-9012
-```
-
-### Example 3: Document Text
-
-**labels.txt:**
-```
-doc_001.jpg	Machine Learning Research
-doc_002.jpg	Annual Report 2023
-doc_003.jpg	Project Proposal
-```
-
-## 🛠️ Advanced Usage
-
-### Custom Architecture
-
-Edit `configs/rec_custom.yml` to try different architectures:
-- CRNN
-- RARE
-- SRN
-- NRTR
-- SAR
-
-### Data Augmentation
-
-The configuration includes `RecAug` for automatic augmentation:
-- Random rotation
-- Color jittering
-- Gaussian noise
-- Perspective transformation
-
-Adjust in config or add custom augmentation in the pipeline.
-
-### Multi-GPU Training
-
-```bash
-# In PaddleOCR directory
-python -m paddle.distributed.launch \
-    --gpus '0,1,2,3' \
-    tools/train.py -c ../configs/rec_custom.yml
-```
-
-## 📄 License
-
-This project structure is based on PaddleOCR, which is licensed under Apache License 2.0.
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit issues or pull requests.
+- [TrOCR Paper](https://arxiv.org/abs/2109.10282)
+- [HuggingFace TrOCR](https://huggingface.co/docs/transformers/model_doc/trocr)
+- [Microsoft TrOCR Models](https://huggingface.co/microsoft/trocr-small-printed)
 
 ---
 
-**Happy Training! 🚀**
-
-For questions or issues, please open an issue on GitHub.
+**Happy OCR Fine-tuning! 🚀**
